@@ -66,11 +66,15 @@ void gyro_setup() {
         write_i2c(I2C2, GYRO_ADDR, GYRO_REG_PWR_MGMT_1, 1, data);
 }
 
+static void byteswap(uint16_t *buf, int n) {
+    for(int i=0; i<n; i++) { uint16_t j = buf[i]; buf[i] = (j >> 8) | (j << 8); }
+}
+
 int gyro_available() { return 1; }
 int gyro_get(uint16_t data[6]) {
     read_i2c(I2C2, GYRO_ADDR, GYRO_REG_XACC_H, 6, (void*)data);
     read_i2c(I2C2, GYRO_ADDR, GYRO_REG_XGYRO_H, 6, (void*)(data+3));
-    swab(data, data, 12);
+    byteswap(data, 6);
     return 0;
 }
 
