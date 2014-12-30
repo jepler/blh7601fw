@@ -29,9 +29,18 @@
 
 static void gpio_setup(void)
 {
+    gpio_set(GPIOA, GPIO8);
+    gpio_set(GPIOD, GPIO8);
+
     rcc_periph_clock_enable(RCC_GPIOD);
     gpio_set_output_options(GPIOD, GPIO_OTYPE_OD, GPIO_OSPEED_50MHZ, GPIO8);
     gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO8);
+    gpio_set(GPIOD, GPIO8);
+
+    rcc_periph_clock_enable(RCC_GPIOA);
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_50MHZ, GPIO8);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO8);
+    gpio_set(GPIOA, GPIO8);
 }
 
 #define writec(c) putchar(c)
@@ -39,41 +48,57 @@ static void gpio_setup(void)
 #define writed(i) printf("%d", i)
 #define writes(s) fputs(s, stdout)
 
+static void shortwait(void) { for(int i=0; i<1500000; i++) __asm__("nop"); }
+static void wait(void) { shortwait(); shortwait(); shortwait(); }
+static void blink(int n) {
+    putchar(n + '0');
+    if(n == 0) {
+        gpio_clear(GPIOA, GPIO8);
+        shortwait();
+        gpio_set(GPIOA, GPIO8);
+    } else {
+        for(int i=0; i<n; i++) {
+            gpio_clear(GPIOD, GPIO8);
+            shortwait();
+            gpio_set(GPIOD, GPIO8);
+            shortwait();
+        }
+    }
+    gpio_set(GPIOA, GPIO8);
+    gpio_set(GPIOD, GPIO8);
+    wait();
+}
+
 int main(void) {
     rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
     gpio_setup();
     usart_setup();
     radio_setup();
-    gyro_setup();
+    // gyro_setup();
     battery_setup();
 
     writes("hello world -- ");
     writed(-42);
     writec('\n');
 
+#if 0
+    for(int i=0; i<20; i++) {
+        blink(i % 10);
+    }
+#endif
+
     for(;;) {
-        if(radio_available() && gyro_available()) {
-            uint16_t data[6];
-            int i = radio_get(data);
-            if(i < 0) { writec('!'); writed(i); }
-            else {
-                for(i=0; i<6; i++) { writex(data[i], 4); writec(' '); }
-            }
-            writes("         ");
+        int i = battery_get_mv();
 
-            i = gyro_get(data);
-            if(i < 0) { writec('!'); writed(i); }
-            else {
-                for(i=0; i<6; i++) { writex(data[i] >> 8, 2); writec(' '); }
-            }
+        char buf[12];
+        snprintf(buf, sizeof(buf), "%d", i);
 
-            writes("         ");
-            i = battery_get_mv();
-            writed(i);
-
-            writec('\n');
-            
-            gpio_toggle(GPIOD, GPIO8);
+        for(int j=0; buf[j]; j++) {
+            blink(buf[j] - '0');
         }
+        putchar('\n');
+        wait();
+        wait();
+
     }
 }
