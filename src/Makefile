@@ -27,7 +27,7 @@ DEFS		= -DSTM32F3
 FP_FLAGS        = -mfloat-abi=hard -mfpu=fpv4-sp-d16
 ARCH_FLAGS      = -mthumb -mcpu=cortex-m4 $(FP_FLAGS)
 
-OBJS += io.o radio.o gyro.o
+OBJS += io.o radio.o gyro.o battery.o
 
 include Makefile.rules
 

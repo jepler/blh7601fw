@@ -22,6 +22,7 @@
 #include "io.h"
 #include "radio.h"
 #include "gyro.h"
+#include "battery.h"
 
 static void gpio_setup(void)
 {
@@ -37,6 +38,7 @@ int main(void) {
     usart_setup();
     radio_setup();
     gyro_setup();
+    battery_setup();
 
     writes("hello world -- ");
     writed(-42);
@@ -57,6 +59,11 @@ int main(void) {
             else {
                 for(i=0; i<6; i++) { writex(data[i] >> 8, 2); writec(' '); }
             }
+
+            writes("         ");
+            i = battery_get_mv();
+            writed(i);
+
             writec('\n');
             
             gpio_toggle(GPIOD, GPIO8);
