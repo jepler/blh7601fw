@@ -126,3 +126,17 @@ void usart1_exti25_isr(void) {
         if(RING_EMPTY(&output)) USART_CR1(USART1) &= ~USART_CR1_TXEIE;
     }
 }
+
+typedef int FILEHANDLE;
+/* Standard IO device handles. */
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
+int _write(FILEHANDLE fh, const uint8_t *buf, uint32_t len, int mode);
+int _write(FILEHANDLE fh, const uint8_t *buf, uint32_t len, int mode) {
+    if(fh != STDOUT && fh != STDERR) return -1;
+    int result = len;
+    while(len--) writec(*buf++);
+    return result;
+}

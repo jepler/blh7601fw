@@ -24,6 +24,9 @@
 #include "gyro.h"
 #include "battery.h"
 
+#include <stdio.h>
+
+
 static void gpio_setup(void)
 {
     rcc_periph_clock_enable(RCC_GPIOD);
@@ -31,6 +34,10 @@ static void gpio_setup(void)
     gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO8);
 }
 
+#define writec(c) putchar(c)
+#define writex(i, nd) printf("%0*x", nd, i)
+#define writed(i) printf("%d", i)
+#define writes(s) fputs(s, stdout)
 
 int main(void) {
     rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
